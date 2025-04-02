@@ -6,20 +6,18 @@ import {
   Param,
   Body,
   Patch,
+  Headers,
 } from '@nestjs/common';
 import { TasksService } from '../services/tasks-use-case-services';
-
-interface TaskProps {
-  description: string;
-}
+import { TaskProps } from '../repositories/tasks.repository';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  getAllTasks(): Promise<any> {
-    return this.tasksService.getAllTasks();
+  getByUserId(@Headers('userId') userId: string) {
+    return this.tasksService.findTaskByUserId(userId);
   }
 
   @Post()

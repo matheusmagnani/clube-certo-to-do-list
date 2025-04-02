@@ -1,18 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { TasksRepository } from '../repositories/tasks.repository';
-
-interface TaskProps {
-  description: string;
-}
+import { TaskProps, TasksRepository } from '../repositories/tasks.repository';
 
 @Injectable()
 export class TasksService {
   constructor(private readonly tasksRepository: TasksRepository) {}
 
-  getAllTasks() {
-    return this.tasksRepository.findAll();
+  findTaskByUserId(userId: string) {
+    return this.tasksRepository.findByUserId(userId);
   }
-
   createTask(taskProps: TaskProps) {
     return this.tasksRepository.create(taskProps);
   }
