@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { PhTrash } from '@phosphor-icons/vue';
 import { defineProps } from 'vue';

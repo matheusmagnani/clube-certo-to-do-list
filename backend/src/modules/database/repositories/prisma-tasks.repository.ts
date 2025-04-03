@@ -32,10 +32,18 @@ export class PrismaTasksRepository implements TasksRepository {
   }
 
   async checkTask(id: number) {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      throw new Error('Tarefa não encontrada');
+    }
+
     await this.prisma.task.update({
       where: { id },
       data: {
-        completed: true,
+        completed: !task.completed,
       },
     });
   }
