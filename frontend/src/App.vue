@@ -1,59 +1,67 @@
 <template>
-  <div>
-    <header class="bg-box-black h-52 flex items-center justify-center">
-      <img class="w-[156px]" src="../src/assets/Logo.svg" alt="Logo" />
-    </header>
-    
-    <main class="h-screen flex flex-col items-center">
-      <div class="flex justify-center gap-[8px]">
-        <input
-          v-model="newTaskDescription"
-          type="text"
-          placeholder="Assine uma nova tarefa"
-          class="bg-box-gray-500 border border-box-black rounded-lg p-[16px] w-[638px] h-[54px] mt-[-27px] text-text-gray-100 text-[16px] placeholder:text-text-gray-300 placeholder:text-[16px] focus:outline-0 focus:border-color2"
-        />
-        <button 
-          @click="handleNewTask"
-          class="bg-color2 w-[90px] h-[52px] rounded-lg text-gray-100 text-[14px] flex items-center justify-center gap-2 mt-[-26px] hover:bg-button-green-300 cursor-pointer"
-        >
+<div>
+  <header class="bg-box-black h-52 flex items-center justify-center">
+    <img class="w-40 sm:w-[156px]" src="../src/assets/Logo.svg" alt="Logo" />
+  </header>
+
+  <main class="min-h-screen flex flex-col items-center px-4">
+    <div class="flex flex-col sm:flex-row justify-center gap-2 sm:gap-[8px] w-full max-w-3xl mt-[-2rem]">
+      <input
+        v-model="newTaskDescription"
+        type="text"
+        placeholder="Assine uma nova tarefa"
+        class="bg-box-gray-500 border border-box-black rounded-lg p-4 w-full sm:w-[638px] h-14 text-text-gray-100 text-base placeholder:text-text-gray-300 focus:outline-none focus:border-color2"
+      />
+      <button 
+        @click="handleNewTask"
+        :disabled="isSubmiting"
+        class="bg-color2 w-full sm:w-[90px] h-14 rounded-lg text-gray-100 text-sm flex items-center justify-center gap-2 hover:bg-button-green-300 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <span v-if="!isSubmiting" class="flex items-center gap-2">
           Criar <PhPlusCircle :size="16" />
-        </button>
-      </div>
-      
-      <div v-if="isLoading" class="mt-8 flex flex-col items-center">
-        <div class="spinner mb-4"></div>
-        <p class="text-color1">Carregando...</p>
-      </div>
-      
-      <div v-else class="text-text-gray-100 justify-between mt-[64px] w-[736px]">
-        <div class="pb-[24px] flex flex-row justify-between">
-          <p class="text-color1 font-bold text-[14px]">
-            Tarefas criadas
-            <span class="ml-[8px] bg-box-gray-500 text-text-gray-100 rounded-full py-0.5 px-2">{{ totalTasks }}</span>
-          </p>
+        </span>
+        <span v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+      </button>
+    </div>
 
-          <p class="text-color1 font-bold text-[14px]">
-            Concluídas
-            <span class="ml-[8px] bg-box-gray-500 text-text-gray-100 rounded-full py-0.5 px-2">{{ completedTasks }}</span>
-          </p>
-        </div>
+    <div v-if="isLoading" class="mt-8 flex flex-col items-center">
+      <div class="spinner mb-4"></div>
+      <p class="text-color1">Carregando...</p>
+    </div>
 
-        <HasNoTasks v-if="tasks.length === 0" />
+    <div v-else class="text-text-gray-100 justify-between mt-16 w-full max-w-3xl">
+      <div class="pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <p class="text-color1 font-bold text-sm flex items-center">
+          Tarefas criadas
+          <span class="ml-2 bg-box-gray-500 text-text-gray-100 rounded-full py-0.5 px-2">
+            {{ totalTasks }}
+          </span>
+        </p>
 
-        <div v-else>
-          <Task
-            v-for="task in tasks"
-            :key="task.id"
-            :id="task.id"
-            :description="task.description"
-            :completed="task.completed"
-            @complete="handleComplete(task.id)"
-            @remove="handleRemove(task.id)"
-          />
-        </div>
+        <p class="text-color1 font-bold text-sm flex items-center mt-2 sm:mt-0">
+          Concluídas
+          <span class="ml-2 bg-box-gray-500 text-text-gray-100 rounded-full py-0.5 px-2">
+            {{ completedTasks }}
+          </span>
+        </p>
       </div>
-    </main>
-  </div>
+
+      <HasNoTasks v-if="tasks.length === 0" />
+
+      <div v-else>
+        <Task
+          v-for="task in tasks"
+          :key="task.id"
+          :id="Number(task.id)"
+          :description="task.description"
+          :completed="task.completed"
+          @complete="handleComplete(task.id as number)"
+          @remove="handleRemove(task.id as number)"
+        />
+      </div>
+    </div>
+  </main>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -63,11 +71,11 @@ import { PhPlusCircle } from '@phosphor-icons/vue'
 import { ref, computed, onMounted } from "vue";
 import type { ITask } from "./types";
 import taskService from "./components/services/task.service"
-import Swal from 'sweetalert2'
 
 const newTaskDescription = ref<string>("");
 const tasks = ref<ITask[]>([]);
 const isLoading = ref(false);
+const isSubmiting = ref(false);
 const completedTasks = computed(() => tasks.value.filter((task) => task.completed).length);
 const totalTasks = computed(() => tasks.value.length);
 const userId = ref('');
@@ -80,9 +88,9 @@ onMounted(async () => {
   try {
     isLoading.value = true;
     const cachedUserId = localStorage.getItem('@todoList/userId');
-    const response = await taskService.getTasks(cachedUserId)
-    tasks.value = response.data.sort((a, b) => Number(a.completed) - Number(b.completed));
     if (cachedUserId) {
+      const response = await taskService.getTasks(cachedUserId)
+      tasks.value = response.data.sort((a, b) => Number(a.completed) - Number(b.completed));
       userId.value = cachedUserId;
     } else {
       const newId = generateUserId();
@@ -99,6 +107,7 @@ onMounted(async () => {
 const handleNewTask = async () => {
   try {
     if (newTaskDescription.value.trim() === '') return;
+      isSubmiting.value = true;
       const response = await taskService.createTask({
         description: newTaskDescription.value,
         completed: false,
@@ -111,6 +120,8 @@ const handleNewTask = async () => {
       newTaskDescription.value = '';
   } catch (error) {
     console.log(error)
+  } finally {
+    isSubmiting.value = false;
   }
 };
 
@@ -125,26 +136,7 @@ const handleComplete = async (id: number) => {
 
 const handleRemove = async (id: number) => {
   try {
-    if (
-      Swal.fire({
-        title: "Tem certeza que deseja excluir esta tarefa?",
-        text: "Você não poderá reverter isso!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Sim, tenho certeza!"
-      }).then((result) => {
-        if (result.isConfirmed) {
-          Swal.fire({
-            title: "Tarefa excluida!",
-            text: "Sua tarefa foi excluída com sucesso.",
-            icon: "success"
-          });
-        }
-      }   
-      )
-    ) {
+    if (window.confirm('Tem certeza que deseja remover esta tarefa?')) {
       tasks.value = tasks.value.filter((task) => task.id !== id);
       await taskService.deleteTask(id);
     }
@@ -153,7 +145,6 @@ const handleRemove = async (id: number) => {
   }
 };
 </script>
-
 <style scoped>
 .spinner {
   border: 4px solid rgba(0, 208, 92, 0.3);
