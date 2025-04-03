@@ -12,10 +12,9 @@ jobs:
            - uses: actions/setup-node@v3
              with:
               node-version: 22
-              cache: 'yarn'
 
-           - run: cd backend
+           - run: cd ./backend
 
-           - run: yarn ci
+           - run: cd ./backend && yarn
 
-           - run: yarn run test
+           - run: cd ./backend && yarn run test
