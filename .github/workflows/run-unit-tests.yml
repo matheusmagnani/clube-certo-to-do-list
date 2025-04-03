@@ -13,7 +13,7 @@ jobs:
              with:
               node-version: 22
 
-           - run: cd backend
+           - run: cd ./backend
 
            - run: yarn
 
